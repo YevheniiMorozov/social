@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block tittle %} Add avatar {% endblock %}
+
+{% block content %}
+
+<form action="{% url 'add_avatar' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h5>Avatar</h5>
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary btn-block">Update</button>
+</form>
+
+{% endblock %}

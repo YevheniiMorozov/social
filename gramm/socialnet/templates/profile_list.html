@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+{% block tittle %} All posts {% endblock %}
+
+{% block content %}
+
+
+{% for profile in profiles %}
+<div class="card">
+  <h5 class="card-header">{{ profile.follow }}</h5>
+  <div class="card-body">
+    <p class="card-text">{{ profile.follow.bio }}</p>
+    <a href="{{ profile.follow.get_absolute_url }}" class="btn btn-primary">Detail view</a>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

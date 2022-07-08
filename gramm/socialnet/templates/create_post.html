@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action="{% url 'create_post' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h5>Add post</h5>
+    {{ tag.as_p }}
+    {{ post.as_p }}
+    {{ img.as_p }}
+    <button type="submit" class="btn btn-primary btn-block">Create post</button>
+</form>
+
+{% endblock %}
