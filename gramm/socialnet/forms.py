@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import Post, Comments, Account, Tag, Image
+from django.contrib.auth.forms import AuthenticationForm
+from .models import Account, Image
 
 
 class UserLoginForm(AuthenticationForm):
@@ -33,28 +33,3 @@ class ImageForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ["image"]
-
-
-class PostForm(forms.ModelForm):
-    class Meta:
-        model = Post
-        fields = ["title", "description"]
-        widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
-        }
-
-
-class TagForm(forms.ModelForm):
-    class Meta:
-        model = Tag
-        fields = ["name"]
-
-
-class CommentsForm(forms.ModelForm):
-    class Meta:
-        model = Comments
-        fields = ["body"]
-        widgets = {
-            "body": forms.TextInput(attrs={"class": "form-control"}),
-        }

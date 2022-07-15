@@ -1,6 +1,7 @@
 import random
 from string import ascii_letters
-from socialnet.models import Account, Post, Comments, Tag, PostTags
+from socialnet.models import Account, Post
+from posts.models import Comments, Tag, PostTags
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -27,14 +28,13 @@ def add_to_db_random_value():
             tortor. Et netus et malesuada fames ac turpis.
             """
 
-    users = [Account(first_name=random.choice(firstname),
+    users = [Account(id=index,
+                     first_name=random.choice(firstname),
                      last_name=random.choice(lastname),
                      email=random_string(5) + "@" + random_string(4) + ".com",
-                     username=random_string(length=random.randint(5, 8)),
                      password=random_string(15),
-                     slug=random_string(length=random.randint(5, 8)),
                      bio="".join(random.choices(population=text.split(), k=random.randint(5, 8)))
-                     ) for _ in range(12)]
+                     ) for index in range(1, 13)]
 
     Account.objects.bulk_create(users)
 
@@ -67,6 +67,7 @@ class Command(BaseCommand):
         parser.add_argument("fake_data", nargs='+', type=str)
 
     def handle(self, *args, **options):
+
         if options["fake_data"]:
             add_to_db_random_value()
             self.stdout.write(self.style.SUCCESS("Successfully create"))

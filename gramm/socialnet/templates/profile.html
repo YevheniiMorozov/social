@@ -16,7 +16,7 @@
             <br>
             <a href="{% url 'add_avatar'%}"> Add or change avatar</a>
             <br>
-            <a href="{% url 'update_user_info'%}">Change info about your account</a>
+            <a href="{% url 'change_password'%}">Change password</a>
             {% endif %}
             <div class="media-body">
                 <h5 class="card-title">{{ profile }} </h5>
@@ -34,10 +34,10 @@
         {% endif %}
     </div>
     <div class="card-footer text muted">
-        <a href="{% url 'post' profile.username %}"> User`s posts | {{ post|length }} </a>
+        <a href="{% url 'post' profile.id %}"> User`s posts | {{ post|length }} </a>
     </div>
     <div class="card-footer text muted">
-        <a href="{% url 'followers' profile.username %}"> Followers | {{ follower|length }} </a>
+        <a href="{% url 'followers' profile.id %}"> Followers | {{ follower|length }} </a>
     </div>
 </div>
 
