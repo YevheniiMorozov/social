@@ -3,14 +3,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, CreateView
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.views.generic.edit import FormMixin
 from posts.models import Post, PostTags, Comments, Upvote
-from socialnet.models import Following, Account, PostImages
+from socialnet.models import Following, PostImages
 from posts.forms import PostForm, TagForm, CommentsForm
 from socialnet.forms import ImageForm
 
 import trafaret as tr
+from trafaret import DataError
+
+from collections import defaultdict
 
 
 LOGIN_URL = "/user/login/"
@@ -34,8 +37,15 @@ class PostByUserId(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
-        tr.Int().check(user_id)
-        return Post.objects.select_related("author").filter(author__id=user_id).all()[:100]
+        try:
+            tr.Int().check(user_id)
+        except DataError:
+            raise Http404("Invalid data")
+        try:
+            post = Post.objects.select_related("author").filter(author__id=user_id).all()[:100]
+        except Post.DoesNotExist:
+            raise Http404("Post does not exist")
+        return post
 
 
 class FollowPost(LoginRequiredMixin, ListView):
@@ -45,16 +55,16 @@ class FollowPost(LoginRequiredMixin, ListView):
     template_name = "main_page.html"
 
     def get_queryset(self):
-        return Post.objects.select_related("author").all()
+        return Post.objects.select_related("author").all()[:100]
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(FollowPost, self).get_context_data(**kwargs)
 
         follow = Following.objects.filter(follow=self.request.user).all()
-        queryset = self.get_queryset()
-        post_dict = {}
-        for post in queryset:
-            post_dict.setdefault(post.author.id, []).append(post)
+        queryset = [(post.author.id, post) for post in self.get_queryset()]
+        post_dict = defaultdict(list)
+        for user_id, post in queryset:
+            post_dict[user_id].append(post)
         follow_post_list = []
         for item in follow:
             follow_post_list.extend(post_dict[item.user.id])
@@ -72,8 +82,15 @@ class ViewPost(LoginRequiredMixin, FormMixin, DetailView):
 
     def get_object(self):
         post_id = self.kwargs.get("post_id")
-        tr.Int().check(post_id)
-        return Post.objects.get(id=post_id)
+        try:
+            tr.Int().check(post_id)
+        except DataError:
+            raise Http404("Invalid data")
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            raise Http404("Post does not exist")
+        return post
 
     def post(self, request, *args, **kwargs):
         comment_form = CommentsForm(request.POST)
@@ -81,7 +98,10 @@ class ViewPost(LoginRequiredMixin, FormMixin, DetailView):
             comment_form.save(commit=False)
             comment_form.instance.author = self.request.user
             post_id = self.kwargs.get("post_id")
-            tr.Int().check(post_id)
+            try:
+                tr.Int().check(post_id)
+            except DataError:
+                raise Http404("Invalid data")
             comment_form.instance.post = Post.objects.get(id=post_id)
             comment = comment_form.save()
             return HttpResponseRedirect(comment.get_absolute_url())
@@ -91,22 +111,15 @@ class ViewPost(LoginRequiredMixin, FormMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(ViewPost, self).get_context_data(**kwargs)
         post_id = self.kwargs.get("post_id")
-        tr.Int().check(post_id)
         try:
-            image = PostImages.objects.get(post__id=post_id)
-        except PostImages.DoesNotExist:
-            image = None
+            tr.Int().check(post_id)
+        except DataError:
+            raise Http404("Invalid data")
         context["form"] = self.form_class
-        context["img"] = image
+        context["img"] = PostImages.objects.filter(post__id=post_id).first()
         context["comments"] = Comments.objects.filter(post__id=post_id).all()
         context["upvotes"] = Upvote.objects.filter(post__id=post_id).all()
-        me = Account.objects.get(id=self.request.user.id)
-        post = self.get_object()
-        try:
-            u = Upvote.objects.get(account=me, post=post)
-        except Upvote.DoesNotExist:
-            u = None
-        context["upvote"] = u
+        context["upvote"] = Upvote.objects.filter(account__id=self.request.user.id, post__id=post_id).first()
         context["tag"] = PostTags.objects.filter(post=self.get_object()).all()
         return context
 
@@ -146,12 +159,11 @@ class CreatePost(CreateView):
 
 @login_required
 def upvote(request, post_id):
-    try:
-        u = Upvote.objects.get(account_id=request.user.id, post_id=post_id)
-    except Upvote.DoesNotExist:
-        u = None
-    if u:
-        Upvote.objects.filter(account_id=request.user.id, post_id=post_id).delete()
-    else:
-        Upvote.objects.create(account_id=request.user.id, post_id=post_id)
-    return redirect("view_post", post_id=post_id)
+    if request.method == "POST":
+        if not Post.objects.filter(id=post_id).exists():
+            raise Http404("Post does not exist")
+        deleted = Upvote.objects.filter(account_id=request.user.id, post_id=post_id).delete()
+        # deleted return tuple (int, {})
+        if deleted[0] == 0:
+            Upvote.objects.create(account_id=request.user.id, post_id=post_id)
+        return redirect("view_post", post_id=post_id)

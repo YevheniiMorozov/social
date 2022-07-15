@@ -24,14 +24,17 @@
             </div>
         </div>
         {% if request.user.id != profile.id %}
-        <a href="{% url 'following' profile.id %}">
-        {% if follow %}
-            Unfollow
-        {% else %}
-            Follow
-        {% endif %}
-            </a>
-        {% endif %}
+        <form action="{% url 'following' profile.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                {% if follow %}
+                Unfollow
+                {% else %}
+                Follow
+                {% endif %}
+            </button>
+            {% endif %}
+        </form>
     </div>
     <div class="card-footer text muted">
         <a href="{% url 'post' profile.id %}"> User`s posts | {{ post|length }} </a>
@@ -44,17 +47,17 @@
 <h3>All {{profile}}`s photo </h3>
 <div class="card mb-3">
     <div class="card-body">
-{% for img in all_images %}
+        {% for img in all_images %}
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
-  <div class="col">
-    <div class="media">
-      <img src="{{img.image.image.url}}" class="mb-5" width="100" height="100" alt="...">
-    </div>
-  </div>
-</div>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+                <div class="media">
+                    <img src="{{img.image.image.url}}" class="mb-5" width="100" height="100" alt="...">
+                </div>
+            </div>
+        </div>
 
-{% endfor %}
+        {% endfor %}
     </div>
 </div>
 

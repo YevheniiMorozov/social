@@ -109,7 +109,7 @@ class ViewTestCase(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Some cool description")
 
-        response = self.client.get(reverse("following", kwargs={"profile_id": 1}), follow=True)
+        response = self.client.post(reverse("following", kwargs={"profile_id": 1}), follow=True)
         self.assertEqual(response.status_code, 200)
 
         response = self.client.get(reverse("follow_post"))

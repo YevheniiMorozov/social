@@ -4,6 +4,7 @@
 {% block tittle %} {{post.title}} {% endblock %}
 
 {% block content %}
+
 <div class="card mb-3">
     <div class="card-header"> Title: {{ post.title }}</div>
     <p class="card-text"><small class="text-muted">
@@ -29,39 +30,41 @@
         <div class="card-footer text muted">
             <h3> Upvotes | {{ upvotes|length }} </h3>
         </div>
-        </div>
-        <a href="{% url 'upvote_post' post.id %}">
-        {% if upvote %}
-            Downvote
-        {% else %}
-            Upvote
-        {% endif %}
-            </a>
     </div>
-    </div>
-
-    <form action="" method="post">
+    <form action="{% url 'upvote_post' post.id %}" method="post">
         {% csrf_token %}
-        <h5>Add comment</h5>
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary btn-block">Create comment</button>
+        <button type="submit" class="btn btn-primary" >
+            {% if upvote %}
+            Downvote
+            {% else %}
+            Upvote
+            {% endif %}
+        </button>
     </form>
-    <br>
-    {% for comment in comments %}
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="media-body">
-                <h5 class="card-title">{{ comment.author }} say:</h5>
-                <p class="card-text">{{ comment.body }}</p>
-            </div>
+</div>
+</div>
+
+<form action="" method="post">
+    {% csrf_token %}
+    <h5>Add comment</h5>
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary btn-block">Create comment</button>
+</form>
+<br>
+{% for comment in comments %}
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="media-body">
+            <h5 class="card-title">{{ comment.author }} say:</h5>
+            <p class="card-text">{{ comment.body }}</p>
         </div>
     </div>
-    <div class="card-footer text-muted">
-        Created: {{ comment.created|date:"Y-m-d H:i:s" }}
-    </div>
+</div>
+<div class="card-footer text-muted">
+    Created: {{ comment.created|date:"Y-m-d H:i:s" }}
+</div>
 </div>
 {% endfor %}
 </div>
-
 
 {% endblock %}
