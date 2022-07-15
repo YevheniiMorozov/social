@@ -95,17 +95,13 @@ class ViewTestCase(BasicTestCase):
         response = self.client.get(reverse("login"))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse("login"), {"username": "first_username", "password": "password1"})
-
-        # AssertionError: 200 != 302 : Response didn't redirect as expected: Response code was 200 (expected 302)
-        # # Я не понял, почему он тут ожидает 302, нужна помощь)
-        # self.assertRedirects(response, reverse("profile", kwargs={"username": "first_username"}))
+        response = self.client.post(reverse("login"), {"email": "fff@111.com", "password": "password1"}, follow=True)
+        self.assertEqual(response.status_code, 200)
 
         self.assertTrue(self.f_user.is_authenticated)
         response = self.client.get(reverse("logout"), follow=True)
         self.assertEqual(response.status_code, 200)
-        # И вот тут тоже почему_то True, тоже не понимаю почему
-        # self.assertFalse(self.f_user.is_authenticated)
+        self.assertFalse(response.context["user"].is_authenticated)
 
     def test_user_follow(self):
         self.client.force_login(user=self.l_user)
