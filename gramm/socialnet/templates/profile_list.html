@@ -5,7 +5,7 @@
 
 {% block content %}
 
-
+{% if profiles %}
 {% for profile in profiles %}
 <div class="card">
   <h5 class="card-header">{{ profile.follow }}</h5>
@@ -32,4 +32,7 @@
         {% endif %}
     </span>
 </div>
+{% else %}
+<h1>oops, there still empty</h1>
+{% endif %}
 {% endblock %}

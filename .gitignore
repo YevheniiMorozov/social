@@ -1,0 +1,7 @@
+/venv/
+.idea/
+.jpeg
+gramm/gramm/.env
+pytest_cache
+.coverage
+__pycache__

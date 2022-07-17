@@ -143,12 +143,15 @@ class FollowerList(LoginRequiredMixin, ListView):
     model = Following
     template_name = "profile_list.html"
     context_object_name = "profiles"
+    allow_empty = True
 
     def get_queryset(self, *args, **kwargs):
         user_id = self.kwargs.get("user_id")
         try:
             tr.Int().check(user_id)
         except DataError:
+            raise Http404("Invalid data")
+        if not (user_id and Account.objects.filter(id=user_id).exists()):
             raise Http404("Invalid data")
         return Following.objects.filter(user__id=user_id).all()
 

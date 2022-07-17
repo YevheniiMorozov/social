@@ -6,7 +6,7 @@ from django.views.generic import ListView, DetailView, CreateView
 from django.http import HttpResponseRedirect, Http404
 from django.views.generic.edit import FormMixin
 from posts.models import Post, PostTags, Comments, Upvote
-from socialnet.models import Following, PostImages
+from socialnet.models import Following, PostImages, Account
 from posts.forms import PostForm, TagForm, CommentsForm
 from socialnet.forms import ImageForm
 
@@ -22,7 +22,7 @@ LOGIN_URL = "/user/login/"
 class MainPage(ListView):
     model = Post
     template_name = "main_page.html"
-    allow_empty = False
+    allow_empty = True
 
     def get_queryset(self):
         return Post.objects.select_related("author").all()[:100]
@@ -33,7 +33,7 @@ class PostByUserId(LoginRequiredMixin, ListView):
     redirect_field_name = "login"
     model = Post
     template_name = "main_page.html"
-    allow_empty = False
+    allow_empty = True
 
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
@@ -41,11 +41,9 @@ class PostByUserId(LoginRequiredMixin, ListView):
             tr.Int().check(user_id)
         except DataError:
             raise Http404("Invalid data")
-        try:
-            post = Post.objects.select_related("author").filter(author__id=user_id).all()[:100]
-        except Post.DoesNotExist:
+        if not (user_id and Account.objects.filter(id=user_id).exists()):
             raise Http404("Post does not exist")
-        return post
+        return Post.objects.select_related("author").filter(author__id=user_id).all()[:100]
 
 
 class FollowPost(LoginRequiredMixin, ListView):

@@ -28,13 +28,13 @@ def add_to_db_random_value():
             tortor. Et netus et malesuada fames ac turpis.
             """
 
-    users = [Account(id=index,
+    users = [Account(
                      first_name=random.choice(firstname),
                      last_name=random.choice(lastname),
                      email=random_string(5) + "@" + random_string(4) + ".com",
                      password=random_string(15),
-                     bio="".join(random.choices(population=text.split(), k=random.randint(5, 8)))
-                     ) for index in range(1, 13)]
+                     bio=text
+                     ) for _ in range(1, 13)]
 
     Account.objects.bulk_create(users)
 
@@ -42,8 +42,8 @@ def add_to_db_random_value():
 
     Tag.objects.bulk_create(tags)
 
-    posts = [Post(title=random.choice(text.split()),
-                  description="".join(random.choices(population=text.split(), k=random.randint(20, 50))),
+    posts = [Post(title="".join(random.choice(text.split())),
+                  description=" ".join(random.choices(population=text.split(), k=random.randint(20, 50))),
                   author=random.choice(users)
                   ) for _ in range(12)]
 
@@ -54,7 +54,7 @@ def add_to_db_random_value():
 
     PostTags.objects.bulk_create(post_tags)
 
-    comments = [Comments(body=random.choices(population=text.split(), k=random.randint(3, 15)),
+    comments = [Comments(body=" ".join(random.choices(population=text.split(), k=random.randint(3, 15))),
                          author=random.choice(users),
                          post=random.choice(posts)
                   ) for _ in range(18)]

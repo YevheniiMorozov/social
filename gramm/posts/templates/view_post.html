@@ -14,7 +14,7 @@
         {% endfor %}
     </small></p>
     <p class="card-text"><small class="text-muted">Created by
-        <a href="{% url 'profile' post.author.id %}"> {{ post.author.username }}</a> at
+        <a href="{% url 'profile' post.author.id %}"> {{ post.author }}</a> at
         {{post.created|date:"Y-m-d H:i"}} </small></p>
     <div class="card-body">
         <div class="media">
@@ -55,7 +55,8 @@
 <div class="card mb-3">
     <div class="card-body">
         <div class="media-body">
-            <h5 class="card-title">{{ comment.author }} say:</h5>
+            <h6 class="card-title">
+                <a href="{% url 'profile' comment.author.id %}"> {{ comment.author }}</a> say:</h6>
             <p class="card-text">{{ comment.body }}</p>
         </div>
     </div>
