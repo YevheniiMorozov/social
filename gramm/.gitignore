@@ -1,6 +1,6 @@
 /venv/
 .idea/
-!media/
+media/
 gramm/gramm/.env
 pytest_cache/
 .coverage
