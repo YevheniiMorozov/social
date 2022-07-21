@@ -11,6 +11,7 @@ urlpatterns = [
     path("profile/<int:user_id>", ViewProfile.as_view(), name="profile"),
     path("profile/<int:user_id>/followers", FollowerList.as_view(), name="followers"),
     path("profile/user_info/", update_user_info, name="update_user_info"),
+    path("profile/change_user_info/", change_user_info, name="change_info"),
     path("profile/change_password/", change_password, name="change_password"),
     path("profile/add_avatar/", add_avatar, name="add_avatar"),
 ]

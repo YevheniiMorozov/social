@@ -9,5 +9,6 @@ urlpatterns = [
     path("posts/<int:user_id>/", PostByUserId.as_view(), name="post"),
     path("posts/view_post/<int:post_id>", ViewPost.as_view(), name="view_post"),
     path("posts/view_post/<int:post_id>/upvote", upvote, name="upvote_post"),
+    path("posts/view_post/<int:post_id>/downvote", downvote, name="downvote_post"),
     path("profile/add_post/", CreatePost.as_view(), name="create_post"),
 ]

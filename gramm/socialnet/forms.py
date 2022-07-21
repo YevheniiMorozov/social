@@ -29,6 +29,17 @@ class UserRegisterForm(forms.ModelForm):
         }
 
 
+class ChangeUserInfoForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ["first_name", "last_name", "bio"]
+        widgets = {
+            "first_name": forms.TextInput(attrs={"class": "form-control"}),
+            "last_name": forms.TextInput(attrs={"class": "form-control"}),
+            "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+
+
 class ImageForm(forms.ModelForm):
     class Meta:
         model = Image

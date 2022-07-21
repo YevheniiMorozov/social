@@ -1,7 +1,7 @@
 import random
 from string import ascii_letters
-from socialnet.models import Account, Post
-from posts.models import Comments, Tag, PostTags
+from socialnet.models import Account, Post, PostImages, Avatar, Image, Following
+from posts.models import Comments, Tag, PostTags, Upvote, Downvote
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -67,6 +67,17 @@ class Command(BaseCommand):
         parser.add_argument("fake_data", nargs='+', type=str)
 
     def handle(self, *args, **options):
+        PostImages.objects.all().delete()
+        Avatar.objects.all().delete()
+        Image.objects.all().delete()
+        PostTags.objects.all().delete()
+        Tag.objects.all().delete()
+        Post.objects.all().delete()
+        Upvote.objects.all().delete()
+        Downvote.objects.all().delete()
+        Comments.objects.all().delete()
+        Following.objects.all().delete()
+        Account.objects.all().delete()
 
         if options["fake_data"]:
             add_to_db_random_value()

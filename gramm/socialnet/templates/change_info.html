@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block tittle %} Info about you {% endblock %}
+
+{% block content %}
+
+<form action="{% url 'change_info' %}" method="post">
+    {% csrf_token %}
+    <h5>Info</h5>
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-dark btn-block">Update</button>
+</form>
+
+{% endblock %}

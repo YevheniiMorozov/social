@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os.path
 from pathlib import Path
 import environ
+import cloudinary
 
 env = environ.Env()
 environ.Env.read_env()
@@ -84,8 +85,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'gramm',
-        'USER': 'postgres',
-        'PASSWORD': '1488',
+        'USER': 'grammuser',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '5432',
         'TEST': {
@@ -140,6 +141,9 @@ EMAIL_PORT = 587
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'gramm/static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -152,3 +156,10 @@ MEDIA_URL = '/media/'
 
 
 AUTH_USER_MODEL = 'socialnet.Account'
+
+
+cloudinary.config(
+  cloud_name="foxxy",
+  api_key="678287491765991",
+  api_secret="avswgWzG3eICbnBmhqUgG6Os08A"
+)

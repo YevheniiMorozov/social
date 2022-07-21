@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
+from cloudinary.models import CloudinaryField
 
 
 class Account(AbstractUser):
@@ -23,7 +24,7 @@ from posts.models import Post
 
 
 class Image(models.Model):
-    image = models.ImageField(upload_to='%Y/%m/%d', blank=True)
+    image = CloudinaryField("image", null=True, default=None, blank=True)
     account = models.ManyToManyField(Account, through="Avatar")
     post = models.ManyToManyField(Post, through="PostImages")
 

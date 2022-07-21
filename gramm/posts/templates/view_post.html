@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load subtraction %}
 
 {% block tittle %} {{post.title}} {% endblock %}
 
@@ -12,7 +12,16 @@
         {% for item in tag %}
         | {{ item.tag.name }}
         {% endfor %}
-    </small></p>
+    </small>
+    {% if request.user.id == post.author.id %}
+    <form method="post">
+        {% csrf_token %}
+        <h5>Add tag</h5>
+        {{ form_tag.as_p }}
+        <button type="submit" class="btn btn-dark btn-block" name="add_tag">Add tag</button>
+    </form>
+    {% endif %}
+    </p>
     <p class="card-text"><small class="text-muted">Created by
         <a href="{% url 'profile' post.author.id %}"> {{ post.author }}</a> at
         {{post.created|date:"Y-m-d H:i"}} </small></p>
@@ -28,27 +37,37 @@
             </div>
         </div>
         <div class="card-footer text muted">
-            <h3> Upvotes | {{ upvotes|length }} </h3>
+            {% with x=upvotes|length y=downvotes|length %}
+            <h3> Upvotes | {{ x|sub:y }} </h3>
+            {% endwith %}
         </div>
     </div>
-    <form action="{% url 'upvote_post' post.id %}" method="post">
+    <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-primary" >
+        <button type="submit" class="btn btn-dark" formaction="{% url 'upvote_post' post.id %}">
             {% if upvote %}
-            Downvote
+            Upvoted
             {% else %}
             Upvote
             {% endif %}
         </button>
+        <----->
+        <button type="submit" class="btn btn-dark" formaction="{% url 'downvote_post' post.id %}">
+            {% if downvote %}
+            Downvoted
+            {% else %}
+            Downvote
+            {% endif %}
+        </button>
     </form>
 </div>
-</div>
+
 
 <form action="" method="post">
     {% csrf_token %}
     <h5>Add comment</h5>
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary btn-block">Create comment</button>
+    <button type="submit" class="btn btn-dark btn-block" name="add_comment">Create comment</button>
 </form>
 <br>
 {% for comment in comments %}

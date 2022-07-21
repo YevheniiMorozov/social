@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.http import HttpResponseRedirect, Http404
 from django.views.generic.edit import FormMixin
-from posts.models import Post, PostTags, Comments, Upvote
+from posts.models import Post, PostTags, Comments, Upvote, Downvote
 from socialnet.models import Following, PostImages, Account
 from posts.forms import PostForm, TagForm, CommentsForm
 from socialnet.forms import ImageForm
@@ -74,6 +74,7 @@ class ViewPost(LoginRequiredMixin, FormMixin, DetailView):
     login_url = LOGIN_URL
     redirect_field_name = "login"
     form_class = CommentsForm
+    form_tag = TagForm
     template_name = "view_post.html"
     pk_url_kwarg = "post_id"
     context_object_name = "post"
@@ -91,20 +92,35 @@ class ViewPost(LoginRequiredMixin, FormMixin, DetailView):
         return post
 
     def post(self, request, *args, **kwargs):
-        comment_form = CommentsForm(request.POST)
-        if comment_form.is_valid():
-            comment_form.save(commit=False)
-            comment_form.instance.author = self.request.user
-            post_id = self.kwargs.get("post_id")
-            try:
-                tr.Int().check(post_id)
-            except DataError:
-                raise Http404("Invalid data")
-            comment_form.instance.post = Post.objects.get(id=post_id)
-            comment = comment_form.save()
-            return HttpResponseRedirect(comment.get_absolute_url())
-        else:
-            return redirect("main")
+        if "add_comment" in request.POST:
+            comment_form = CommentsForm(request.POST)
+            if comment_form.is_valid():
+                comment_form.save(commit=False)
+                comment_form.instance.author = self.request.user
+                post_id = self.kwargs.get("post_id")
+                try:
+                    tr.Int().check(post_id)
+                except DataError:
+                    raise Http404("Invalid data")
+                comment_form.instance.post = Post.objects.get(id=post_id)
+                comment = comment_form.save()
+                return HttpResponseRedirect(comment.get_absolute_url())
+            else:
+                return redirect("main")
+        elif "add_tag" in request.POST:
+            tag_form = TagForm(request.POST)
+            if tag_form.is_valid():
+                tag_form.save()
+                post_id = self.kwargs.get("post_id")
+                try:
+                    tr.Int().check(post_id)
+                except DataError:
+                    raise Http404("Invalid data")
+                tag_form.instance.post.add(Post.objects.get(id=post_id))
+                tag_form.save()
+                return redirect("view_post", post_id=post_id)
+            else:
+                return redirect("main")
 
     def get_context_data(self, **kwargs):
         context = super(ViewPost, self).get_context_data(**kwargs)
@@ -114,10 +130,13 @@ class ViewPost(LoginRequiredMixin, FormMixin, DetailView):
         except DataError:
             raise Http404("Invalid data")
         context["form"] = self.form_class
+        context["form_tag"] = self.form_tag
         context["img"] = PostImages.objects.filter(post__id=post_id).first()
         context["comments"] = Comments.objects.filter(post__id=post_id).all()
         context["upvotes"] = Upvote.objects.filter(post__id=post_id).all()
+        context["downvotes"] = Downvote.objects.filter(post__id=post_id).all()
         context["upvote"] = Upvote.objects.filter(account__id=self.request.user.id, post__id=post_id).first()
+        context["downvote"] = Downvote.objects.filter(account__id=self.request.user.id, post__id=post_id).first()
         context["tag"] = PostTags.objects.filter(post=self.get_object()).all()
         return context
 
@@ -164,4 +183,19 @@ def upvote(request, post_id):
         # deleted return tuple (int, {})
         if deleted[0] == 0:
             Upvote.objects.create(account_id=request.user.id, post_id=post_id)
+            if Downvote.objects.filter(account_id=request.user.id, post_id=post_id).exists():
+                Downvote.objects.filter(account_id=request.user.id, post_id=post_id).delete()
+        return redirect("view_post", post_id=post_id)
+
+
+@login_required
+def downvote(request, post_id):
+    if request.method == "POST":
+        if not Post.objects.filter(id=post_id).exists():
+            raise Http404("Post does not exist")
+        deleted = Downvote.objects.filter(account_id=request.user.id, post_id=post_id).delete()
+        if deleted[0] == 0:
+            Downvote.objects.create(account_id=request.user.id, post_id=post_id)
+            if Upvote.objects.filter(account_id=request.user.id, post_id=post_id).exists():
+                Upvote.objects.filter(account_id=request.user.id, post_id=post_id).delete()
         return redirect("view_post", post_id=post_id)

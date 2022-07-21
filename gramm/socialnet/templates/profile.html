@@ -5,21 +5,15 @@
 
 {% block content %}
 
-<br>
 <div class="card mb-3">
     <div class="card-body">
         <div class="media">
             {% if img %}
             <img src="{{img.image.image.url}}" class="mb-3" width="200" height="200" alt="">
             {% endif %}
-            {% if request.user.id == profile.id%}
-            <br>
-            <a href="{% url 'add_avatar'%}"> Add or change avatar</a>
-            <br>
-            <a href="{% url 'change_password'%}">Change password</a>
-            {% endif %}
             <div class="media-body">
                 <h5 class="card-title">{{ profile }} </h5>
+                <h6>Bio:</h6>
                 <p class="card-text">{{ profile.bio }}</p>
             </div>
         </div>
@@ -37,14 +31,12 @@
         </form>
     </div>
     <div class="card-footer text muted">
-        <a href="{% url 'post' profile.id %}"> User`s posts | {{ post|length }} </a>
-    </div>
-    <div class="card-footer text muted">
+        <a href="{% url 'post' profile.id %}"> User`s posts | {{ post|length }} </a>   <>
         <a href="{% url 'followers' profile.id %}"> Followers | {{ follower|length }} </a>
     </div>
 </div>
-
-<h3>All {{profile}}`s photo </h3>
+{% if img %}
+<h3>All {{profile.first_name}}`s photo </h3>
 <div class="card mb-3">
     <div class="card-body">
         {% for img in all_images %}
@@ -60,5 +52,5 @@
         {% endfor %}
     </div>
 </div>
-
+{% endif %}
 {% endblock %}

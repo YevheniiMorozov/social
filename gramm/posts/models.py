@@ -52,3 +52,8 @@ class Comments(models.Model):
 class Upvote(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+
+class Downvote(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)

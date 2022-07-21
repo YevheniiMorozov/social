@@ -7,7 +7,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.forms import PasswordChangeForm
-from .forms import UserLoginForm, UserRegisterForm, AccountRegisterForm, ImageForm
+from .forms import UserLoginForm, UserRegisterForm, AccountRegisterForm, ImageForm, ChangeUserInfoForm
 from posts.models import Post
 from .models import Account, Avatar, Following
 
@@ -68,6 +68,26 @@ def update_user_info(request):
     else:
         form = UserRegisterForm()
         return render(request, "update_user_profile.html", {"form": form})
+
+
+@login_required
+def change_user_info(request):
+    if request.method == "POST":
+        form = ChangeUserInfoForm(request.POST, instance=request.user)
+        if form.is_valid():
+            Account.objects.filter(email=request.user.email).update(
+                first_name=form.instance.first_name,
+                last_name=form.instance.last_name,
+                bio=form.instance.bio,
+            )
+            login(request, Account.objects.get(email=request.user.email))
+            messages.success(request, "Success!")
+            return redirect("profile", user_id=request.user.id)
+        else:
+            messages.error(request, "Invalid data, please try again")
+    else:
+        form = ChangeUserInfoForm()
+        return render(request, "change_info.html", {"form": form})
 
 
 @login_required

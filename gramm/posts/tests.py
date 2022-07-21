@@ -1,5 +1,5 @@
 from django.urls import reverse
-from .models import Post, PostTags, Upvote
+from .models import Post, PostTags, Upvote, Downvote
 from socialnet.tests import BasicTestCase
 
 
@@ -25,6 +25,10 @@ class PostTestCase(BasicTestCase):
         response = self.client.post(reverse("upvote_post", kwargs={"post_id": 1}), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Upvote.objects.filter(post__id=1).count(), 0)
+
+        response = self.client.post(reverse("downvote_post", kwargs={"post_id": 1}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Downvote.objects.filter(post__id=1).count(), 1)
 
         response = self.client.post(reverse("view_post", kwargs={"post_id": 1}), {"body": "Cool comment"}, follow=True)
         self.assertEqual(response.status_code, 200)

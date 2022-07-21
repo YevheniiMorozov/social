@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
-
 {% block tittle %} All posts {% endblock %}
 
 {% block content %}
 
 {% if object_list %}
+
 {% for item in object_list %}
-<div class="card mb-3">
-    <div class="card-body">
+<div class="card border-dark mb-3">
+    <div class="card-body text-dark">
         <h5 class="card-title">{{item.title}}</h5>
         <p class="card-text"> {{item.description|truncatewords:20}} </p>
-        <a href="{{ item.get_absolute_url }}" class="btn btn-primary">Read more...</a>
+        <a href="{{ item.get_absolute_url }}" class="btn btn-dark">Read more...</a>
         <p class="card-text"><small class="text-muted">Created by
             <a href="{% url 'profile' item.author.id %}"> {{ item.author }}</a> at
             {{item.created|date:"Y-m-d H:i"}} </small></p>
