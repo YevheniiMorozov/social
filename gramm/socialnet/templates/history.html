@@ -16,7 +16,7 @@
         {% endif %}
         {% if item.upvote_photo.user %}
         <p class="card-text"><a href="{% url 'profile' item.upvote_photo.user.id %}">{{item.upvote_photo.user}}</a>
-            like your <a href="{% url 'view_photo' item.upvote_photo.user.id %}"> photo </a>
+            like your <a href="{% url 'view_photo' item.upvote_photo.photo.id %}"> photo </a>
         </p>
         {% endif %}
         {% if item.follow.follow %}
