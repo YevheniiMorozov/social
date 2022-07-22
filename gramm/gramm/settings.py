@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-qv6!$h(mna$ctea7=vuld-3ko-#)5)s_4*)epl)*8osta%&b^&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -85,8 +85,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'gramm',
-        'USER': 'postgres',
-        'PASSWORD': '1488',
+        'USER': 'grammuser',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '5432',
         'TEST': {
