@@ -20,7 +20,7 @@ class Account(AbstractUser):
         return reverse("profile", kwargs={'user_id': self.id})
 
 
-from posts.models import Post
+from posts.models import Post, Upvote
 
 
 class Image(models.Model):
@@ -51,3 +51,22 @@ class Following(models.Model):
     user = models.ForeignKey(Account, related_name="user", on_delete=models.CASCADE)
     follow = models.ForeignKey(Account, related_name="follow", on_delete=models.CASCADE)
 
+
+class UpvotePhoto(models.Model):
+    user = models.ForeignKey(Account, on_delete=models.CASCADE)
+    photo = models.ForeignKey(Image, on_delete=models.CASCADE)
+
+
+class DownvotePhoto(models.Model):
+    user = models.ForeignKey(Account, on_delete=models.CASCADE)
+    photo = models.ForeignKey(Image, on_delete=models.CASCADE)
+
+
+class History(models.Model):
+    account = models.ForeignKey(Account, related_name="account", on_delete=models.CASCADE)
+    upvote_post = models.ForeignKey(Upvote, related_name="upvote_post", on_delete=models.CASCADE, null=True)
+    upvote_photo = models.ForeignKey(UpvotePhoto, related_name="upvote_photo", on_delete=models.CASCADE, null=True)
+    follow = models.ForeignKey(Following, related_name="follow_user", on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        ordering = ["-id"]

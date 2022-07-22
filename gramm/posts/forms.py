@@ -13,6 +13,8 @@ class PostForm(forms.ModelForm):
 
 
 class TagForm(forms.ModelForm):
+    name = forms.CharField(help_text="add new tag", widget=forms.TextInput, required=False)
+
     class Meta:
         model = Tag
         fields = ["name"]

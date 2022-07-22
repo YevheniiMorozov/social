@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-qv6!$h(mna$ctea7=vuld-3ko-#)5)s_4*)epl)*8osta%&b^&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -85,8 +85,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'gramm',
-        'USER': 'grammuser',
-        'PASSWORD': 'password',
+        'USER': 'postgres',
+        'PASSWORD': '1488',
         'HOST': 'localhost',
         'PORT': '5432',
         'TEST': {
@@ -142,7 +142,7 @@ EMAIL_PORT = 587
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'gramm/static')
+    os.path.join(BASE_DIR, 'gramm/static'),
 ]
 
 # Default primary key field type

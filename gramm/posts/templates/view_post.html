@@ -13,11 +13,17 @@
         | {{ item.tag.name }}
         {% endfor %}
     </small>
-    {% if request.user.id == post.author.id %}
+        {% if request.user.id == post.author.id %}
     <form method="post">
         {% csrf_token %}
         <h5>Add tag</h5>
-        {{ form_tag.as_p }}
+        <input list="tag_list" , placeholder="chose tag" class="form-control" name="earlier_tag" style="width: 300px;">
+        <datalist id="tag_list">
+            {% for element in tag_list %}
+            <option>{{ element }}</option>
+            {% endfor %}
+        </datalist>
+    <br>
         <button type="submit" class="btn btn-dark btn-block" name="add_tag">Add tag</button>
     </form>
     {% endif %}

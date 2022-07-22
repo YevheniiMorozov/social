@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block tittle %} All posts {% endblock %}
+
+{% block content %}
+
+{% if object_list %}
+
+{% for item in object_list %}
+<div class="card border-dark mb-3">
+    <div class="card-body text-dark">
+        {% if item.upvote_post.account %}
+        <p class="card-text"><a href="{% url 'profile' item.upvote_post.account.id %}">{{item.upvote_post.account}}</a>
+            like your <a href="{% url 'view_post' item.upvote_post.post.id %}"> post </a>
+        </p>
+        {% endif %}
+        {% if item.upvote_photo.user %}
+        <p class="card-text"><a href="{% url 'profile' item.upvote_photo.user.id %}">{{item.upvote_photo.user}}</a>
+            like your <a href="{% url 'view_photo' item.upvote_photo.user.id %}"> photo </a>
+        </p>
+        {% endif %}
+        {% if item.follow.follow %}
+        <p class="card-text"><a href="{% url 'profile' item.follow.follow.id %}">{{item.follow.follow}}</a>
+            your follower
+        </p>
+        {% endif %}
+
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<h1>oops, there still empty</h1>
+{% endif %}
+{% endblock %}

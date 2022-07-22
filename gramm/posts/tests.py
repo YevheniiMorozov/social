@@ -1,6 +1,7 @@
 from django.urls import reverse
-from .models import Post, PostTags, Upvote, Downvote
+
 from socialnet.tests import BasicTestCase
+from .models import Post, PostTags, Upvote, Downvote
 
 
 class PostTestCase(BasicTestCase):
@@ -15,8 +16,9 @@ class PostTestCase(BasicTestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_view_post(self):
+        post = Post.objects.get(title="Cool title")
         self.client.force_login(user=self.l_user)
-        response = self.client.get(reverse("view_post", kwargs={"post_id": 1}))
+        response = self.client.get(reverse("view_post", kwargs={"post_id": post.id}))
         self.assertEqual(response.status_code, 200)
 
         self.assertContains(response, "Cool title")
@@ -30,7 +32,8 @@ class PostTestCase(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Downvote.objects.filter(post__id=1).count(), 1)
 
-        response = self.client.post(reverse("view_post", kwargs={"post_id": 1}), {"body": "Cool comment"}, follow=True)
+        response = self.client.post(reverse("view_post", kwargs={"post_id": 1}),
+                                    {"add_comment": True, "body": "Cool comment"}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Cool comment")
 
@@ -42,10 +45,9 @@ class PostTestCase(BasicTestCase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post(reverse("create_post"),
-                                    {"title": "title1", "description": "desc1", "name": "test_tag"}, follow=True)
+                                    {"title": "title1", "description": "desc1", "earlier_tag": "test_tag"}, follow=True)
         self.assertEqual(response.status_code, 200)
         post = Post.objects.get(title="title1")
         post_tag = PostTags.objects.get(post=post)
         self.assertEqual(post_tag.tag.name, "test_tag")
         self.client.logout()
-

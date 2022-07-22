@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load subtraction %}
+
+{% block content %}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="media">
+            <img src="{{ photo.image.url }}" alt="" class="mr-3">
+            <div class="media-body">
+                <div class="card-footer text muted">
+                    {% with x=upvotes|length y=downvotes|length %}
+                    <h3> Upvotes | {{ x|sub:y }} </h3>
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-dark" formaction="{% url 'upvote_photo' photo.id %}">
+            {% if upvote %}
+            Upvoted
+            {% else %}
+            Upvote
+            {% endif %}
+        </button>
+        <----->
+        <button type="submit" class="btn btn-dark" formaction="{% url 'downvote_photo' photo.id %}">
+            {% if downvote %}
+            Downvoted
+            {% else %}
+            Downvote
+            {% endif %}
+        </button>
+    </form>
+</div>
+
+{% endblock %}

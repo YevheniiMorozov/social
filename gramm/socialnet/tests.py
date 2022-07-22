@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import Account, Post, Following
+from .models import Account, Post, Following, History
 from posts.models import Tag, PostTags, Comments, Upvote
 
 
@@ -32,6 +32,8 @@ class BasicTestCase(TestCase):
                                                 body="comment")
         self.upvote = Upvote.objects.create(account=self.l_user, post=self.post)
         self.follow = Following.objects.create(user=self.f_user, follow=self.l_user)
+        self.follow2 = Following.objects.create(user=self.l_user, follow=self.f_user)
+        self.history = History.objects.create(account_id=self.l_user.id, follow=self.follow2)
 
     def test_user(self):
         self.assertEqual(Account.objects.count(), 2)
@@ -43,7 +45,6 @@ class ModelTestCase(BasicTestCase):
         user = Account.objects.get(username="first_username")
         self.assertEqual(user.first_name, "first")
         self.assertEqual(user.last_name, "FIRST")
-        self.assertEqual(user.username, "first_username")
         self.assertEqual(user.email, "fff@111.com")
         self.assertEqual(user.bio, "first_bio")
 
@@ -68,26 +69,25 @@ class ViewTestCase(BasicTestCase):
         response = self.client.get(reverse('register'))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse("register"), {"email": "email@email.com"})
-        self.assertRedirects(response, reverse('update_user_info'))
-
-        response = self.client.get(reverse("update_user_info"))
+        response = self.client.post(reverse("register"), {"email": "email@email.com",
+                                                          "password1": "VeRyStRoNgPaSsWoRd777",
+                                                          "password2": "VeRyStRoNgPaSsWoRd777"}, follow=True)
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse("update_user_info"),
+        response = self.client.get(reverse("change_info"))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse("change_info"),
                                         {
                                             "first_name": "f",
                                             "last_name": "l",
-                                            "username": "username123",
-                                            "password": "13645687",
                                             "bio": "bio"
                                          })
-        self.assertRedirects(response, reverse("main"))
+        user = Account.objects.get(email="email@email.com")
+        self.assertRedirects(response, reverse("profile", kwargs={"user_id": user.id}))
 
-        user = Account.objects.get(username="username123")
         self.assertEqual(user.first_name, "f")
         self.assertEqual(user.last_name, "l")
-        self.assertEqual(user.username, "username123")
         self.assertEqual(user.bio, "bio")
         self.client.logout()
 
@@ -112,6 +112,18 @@ class ViewTestCase(BasicTestCase):
         response = self.client.post(reverse("following", kwargs={"profile_id": 1}), follow=True)
         self.assertEqual(response.status_code, 200)
 
+        response = self.client.get(reverse("change_password"))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse("add_avatar"))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse("followers", kwargs={"user_id": self.f_user.id}))
+        self.assertEqual(response.status_code, 200)
+
         response = self.client.get(reverse("follow_post"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "oops, there still empty")
+
+        response = self.client.get(reverse("history", kwargs={"user_id": self.l_user.id}))
+        self.assertEqual(response.status_code, 200)

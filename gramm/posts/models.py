@@ -20,7 +20,7 @@ class Post(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=50, verbose_name="tag")
+    name = models.CharField(max_length=50, verbose_name="tag", blank=True, default=None, null=True)
     post = models.ManyToManyField(Post, through="PostTags")
 
     def __str__(self):

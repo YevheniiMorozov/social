@@ -1,15 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.forms import PasswordChangeForm
-from .forms import UserLoginForm, UserRegisterForm, AccountRegisterForm, ImageForm, ChangeUserInfoForm
+from .forms import UserLoginForm, AccountRegisterForm, ImageForm, ChangeUserInfoForm
 from posts.models import Post
-from .models import Account, Avatar, Following
+from .models import Account, Avatar, Following, Image, UpvotePhoto, DownvotePhoto, History
 
 import trafaret as tr
 from trafaret import DataError
@@ -40,34 +39,13 @@ def register_user(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('update_user_info')
+            return redirect('change_info')
         else:
-            messages.error(request, "Invalid data, please try again")
+            messages.error(request, "Invalid data")
+            return redirect("register")
     else:
         form = AccountRegisterForm()
         return render(request, "register.html", {"form": form})
-
-
-@login_required
-def update_user_info(request):
-    if request.method == "POST":
-        form = UserRegisterForm(request.POST, instance=request.user)
-        if form.is_valid():
-            Account.objects.filter(email=request.user.email).update(
-                first_name=form.instance.first_name,
-                last_name=form.instance.last_name,
-                password=make_password(form.instance.password),
-                username=form.instance.username,
-                bio=form.instance.bio,
-            )
-            login(request, Account.objects.get(email=request.user.email))
-            messages.success(request, "Success!")
-            return redirect("main")
-        else:
-            messages.error(request, "Invalid data, please try again")
-    else:
-        form = UserRegisterForm()
-        return render(request, "update_user_profile.html", {"form": form})
 
 
 @login_required
@@ -85,6 +63,7 @@ def change_user_info(request):
             return redirect("profile", user_id=request.user.id)
         else:
             messages.error(request, "Invalid data, please try again")
+            return redirect("change_info")
     else:
         form = ChangeUserInfoForm()
         return render(request, "change_info.html", {"form": form})
@@ -134,10 +113,44 @@ class ViewProfile(LoginRequiredMixin, DetailView):
         except DataError:
             raise Http404("Invalid data")
         context["post"] = Post.objects.filter(author__id=user_id).all()
-        context["all_images"] = Avatar.objects.filter(account__id=user_id).all()
+        context["all_images"] = Avatar.objects.filter(account__id=user_id).select_related("image").all()
         context['img'] = context['all_images'][0] if context['all_images'] else None
         context["follower"] = Following.objects.filter(user__id=user_id).all()
         context["follow"] = Following.objects.filter(user__id=user_id, follow__id=self.request.user.id).first()
+        return context
+
+
+class ViewPhoto(LoginRequiredMixin, DetailView):
+    login_url = LOGIN_URL
+    redirect_field_name = "login"
+    template_name = "view_photo.html"
+    context_object_name = "photo"
+
+    def get_object(self):
+        image_id = self.kwargs.get("image_id")
+        try:
+            tr.Int().check(image_id)
+        except DataError:
+            raise Http404("Invalid data")
+        try:
+            image = Image.objects.get(id=image_id)
+        except Image.DoesNotExist:
+            raise Http404("Image does not exist")
+        return image
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(ViewPhoto, self).get_context_data(**kwargs)
+        image_id = self.kwargs.get("image_id")
+        if not (image_id and Image.objects.filter(id=image_id).exists()):
+            raise Http404("Invalid data")
+        try:
+            tr.Int().check(image_id)
+        except DataError:
+            raise Http404("Invalid data")
+        context["upvotes"] = UpvotePhoto.objects.filter(photo__id=image_id).all()
+        context["downvotes"] = DownvotePhoto.objects.filter(photo__id=image_id).all()
+        context["upvote"] = UpvotePhoto.objects.filter(user__id=self.request.user.id, photo__id=image_id).first()
+        context["downvote"] = DownvotePhoto.objects.filter(user__id=self.request.user.id, photo__id=image_id).first()
         return context
 
 
@@ -150,7 +163,8 @@ def add_avatar(request):
             form.instance.account.add(request.user)
             return redirect("profile", request.user.id)
         else:
-            messages.error(request, "Invalid data, please try again")
+            messages.error(request, "File must be image and < 10mb")
+            return redirect("add_avatar")
     else:
         form = ImageForm()
         return render(request, "add_avatar.html", {"form": form})
@@ -183,6 +197,56 @@ def follow_unfollow(request, profile_id):
             raise Http404("User does not exist")
         deleted = Following.objects.filter(user_id=profile_id, follow_id=request.user.id).delete()
         if deleted[0] == 0:
-            Following.objects.create(user_id=profile_id, follow_id=request.user.id)
+            follow = Following.objects.create(user_id=profile_id, follow_id=request.user.id)
+            if not History.objects.filter(account_id=profile_id, follow=follow).exists():
+                History.objects.create(account_id=profile_id, follow_id=follow.id)
         return redirect("profile", user_id=profile_id)
 
+
+@login_required
+def upvote_photo(request, image_id):
+    if request.method == "POST":
+        if not Image.objects.filter(id=image_id).exists():
+            raise Http404("Image does not exist")
+        deleted = UpvotePhoto.objects.filter(user_id=request.user.id, photo_id=image_id).delete()
+        avatar = Avatar.objects.filter(image_id=image_id).select_related("account").first()
+        # deleted return tuple (int, {})
+        if deleted[0] == 0:
+            u = UpvotePhoto.objects.create(user_id=request.user.id, photo_id=image_id)
+            if not History.objects.filter(account=avatar.account, upvote_photo=u).exists():
+                History.objects.create(account=avatar.account, upvote_photo=u)
+            if DownvotePhoto.objects.filter(user_id=request.user.id, photo_id=image_id).exists():
+                DownvotePhoto.objects.filter(user_id=request.user.id, photo_id=image_id).delete()
+        return redirect("view_photo", image_id=image_id)
+
+
+@login_required
+def downvote_photo(request, image_id):
+    if request.method == "POST":
+        if not Image.objects.filter(id=image_id).exists():
+            raise Http404("Image does not exist")
+        deleted = DownvotePhoto.objects.filter(user_id=request.user.id, photo_id=image_id).delete()
+        if deleted[0] == 0:
+            DownvotePhoto.objects.create(user_id=request.user.id, photo_id=image_id)
+            if UpvotePhoto.objects.filter(user_id=request.user.id, photo_id=image_id).exists():
+                UpvotePhoto.objects.filter(user_id=request.user.id, photo_id=image_id).delete()
+        return redirect("view_photo", image_id=image_id)
+
+
+class ViewHistory(LoginRequiredMixin, ListView):
+    login_url = LOGIN_URL
+    redirect_field_name = "login"
+    model = History
+    template_name = "history.html"
+
+    def get_queryset(self):
+        user_id = self.kwargs.get("user_id")
+        try:
+            tr.Int().check(user_id)
+        except DataError:
+            raise Http404("Invalid data")
+        if not (user_id and History.objects.filter(account_id=user_id).exists()):
+            raise Http404("Post does not exist")
+        history = History.objects.filter(
+            account_id=user_id).select_related("upvote_post", "upvote_photo", "follow").all()[:100]
+        return history

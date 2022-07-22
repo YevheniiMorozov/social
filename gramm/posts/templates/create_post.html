@@ -5,6 +5,15 @@
 <form action="{% url 'create_post' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <h5>Add post</h5>
+    <br>
+    <br>
+    <input list="tag_list" , placeholder="chose tag" class="form-control" name="earlier_tag" style="width: 300px;">
+    <datalist id="tag_list">
+        {% for element in tag_list %}
+        <option>{{ element }}</option>
+        {% endfor %}
+    </datalist>
+    <br>
     {{ tag.as_p }}
     {{ post.as_p }}
     {{ img.as_p }}
