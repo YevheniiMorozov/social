@@ -42,7 +42,7 @@ class ImageForm(forms.ModelForm):
             if image.size > 10 * 1024 * 1024:
                 raise ValidationError("Image file too large ( > 4mb )")
             # Cloudinary can download pdf file without that condition. Also now we can create post without image
-            elif image.size < 10 * 1024 * 1024:
+            else:
                 try:
                     im.open(image)
                 except IOError:
