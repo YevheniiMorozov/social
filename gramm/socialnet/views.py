@@ -200,7 +200,7 @@ class FollowerList(LoginRequiredMixin, ListView):
         except DataError:
             raise Http404("Invalid data")
         if not (user_id and Account.objects.filter(id=user_id).exists()):
-            raise Http404("Invalid data")
+            raise Http404("User does not exist")
         return Following.objects.filter(user__id=user_id).all()
 
 
