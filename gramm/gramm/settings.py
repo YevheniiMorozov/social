@@ -11,11 +11,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os.path
 from pathlib import Path
-import environ
 import cloudinary
-
-env = environ.Env()
-environ.Env.read_env()
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,8 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qv6!$h(mna$ctea7=vuld-3ko-#)5)s_4*)epl)*8osta%&b^&'
-
+SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -45,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'socialnet.apps.SocialnetConfig',
     'posts.apps.PostsConfig',
+    'social_django'
 ]
 
 MIDDLEWARE = [
@@ -55,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'gramm.urls'
@@ -70,10 +68,19 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 WSGI_APPLICATION = 'gramm.wsgi.application'
 
@@ -84,9 +91,9 @@ WSGI_APPLICATION = 'gramm.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'gramm',
-        'USER': 'postgres',
-        'PASSWORD': '1488',
+        'NAME': config('POSTGRES_DATABASE_NAME'),
+        'USER': config('POSTGRES_USER'),
+        'PASSWORD': config('POSTGRES_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
         'TEST': {
@@ -95,6 +102,7 @@ DATABASES = {
     }
 }
 
+print(config('POSTGRES_DATABASE_NAME'))
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -127,15 +135,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_FROM_USER = env("EMAIL_FROM_USER")
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_HOST_USER = env("EMAIL_FROM_USER")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
@@ -159,7 +158,15 @@ AUTH_USER_MODEL = 'socialnet.Account'
 
 
 cloudinary.config(
-  cloud_name="foxxy",
-  api_key="678287491765991",
-  api_secret="avswgWzG3eICbnBmhqUgG6Os08A"
+  cloud_name=config("CLOUDINARY_API_NAME"),
+  api_key=config("CLOUDINARY_API_KEY"),
+  api_secret=config('CLOUDINARY_API_SECRET')
 )
+
+
+LOGIN_REDIRECT_URL = 'change_info'
+
+SOCIAL_AUTH_PROTECTED_USER_FIELDS = ['first_name', 'last_name']
+SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
+SOCIAL_AUTH_GITHUB_KEY = config("SOCIAL_AUTH_GITHUB_KEY")
+SOCIAL_AUTH_GITHUB_SECRET = config('SOCIAL_AUTH_GITHUB_SECRET')

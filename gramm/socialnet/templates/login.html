@@ -9,4 +9,12 @@
     <button type="submit" class="btn btn-primary btn-block">login</button>
 </form>
 
+<br>
+<p><strong>-- OR --</strong></p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-dark btn-block" formaction="{% url 'social:begin' 'github' %}">
+        Login with GitHub</button>
+</form>
+
 {% endblock %}

@@ -5,10 +5,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, DetailView
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, AdminPasswordChangeForm
 from .forms import UserLoginForm, AccountRegisterForm, ImageForm, ChangeUserInfoForm
 from posts.models import Post
 from .models import Account, Avatar, Following, Image, UpvotePhoto, DownvotePhoto, History
+from social_django.models import UserSocialAuth
 
 import trafaret as tr
 from trafaret import DataError
@@ -22,7 +23,7 @@ def login_user(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect("profile", user.id)
+            return redirect("main")
     else:
         form = UserLoginForm()
     return render(request, "login.html", {"form": form})
@@ -41,7 +42,7 @@ def register_user(request):
             login(request, user)
             return redirect('change_info')
         else:
-            messages.error(request, "Invalid data")
+            messages.error(request, "This mail box is already register or password are too short")
             return redirect("register")
     else:
         form = AccountRegisterForm()
@@ -58,30 +59,43 @@ def change_user_info(request):
                 last_name=form.instance.last_name,
                 bio=form.instance.bio,
             )
-            login(request, Account.objects.get(email=request.user.email))
+            login(request, Account.objects.get(email=request.user.email),
+                  backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, "Success!")
             return redirect("profile", user_id=request.user.id)
         else:
             messages.error(request, "Invalid data, please try again")
             return redirect("change_info")
     else:
+        user = request.user
+        try:
+            github_login = user.social_auth.get(provider='github')
+        except UserSocialAuth.DoesNotExist:
+            github_login = None
+        can_disconnect = (user.social_auth.count() > 1 or user.has_usable_password())
         form = ChangeUserInfoForm()
-        return render(request, "change_info.html", {"form": form})
+        return render(request, "change_info.html", {"form": form,
+                                                    'github_login': github_login,
+                                                    'can_disconnect': can_disconnect})
 
 
 @login_required
 def change_password(request):
+    if request.user.has_usable_password():
+        pass_form = PasswordChangeForm
+    else:
+        pass_form = AdminPasswordChangeForm
     if request.method == "POST":
-        form = PasswordChangeForm(data=request.POST, user=request.user)
+        form = pass_form(data=request.POST, user=request.user)
         if form.is_valid():
             form.save()
             update_session_auth_hash(request, form.user)
             return redirect("main")
         else:
             messages.error(request, "Invalid data, please try again")
-            return redirect("add_avatar")
+            return redirect("change_password")
     else:
-        form = PasswordChangeForm(user=request.user)
+        form = pass_form(user=request.user)
         return render(request, "pass.html", {"form": form})
 
 
@@ -238,6 +252,7 @@ class ViewHistory(LoginRequiredMixin, ListView):
     redirect_field_name = "login"
     model = History
     template_name = "history.html"
+    allow_empty = True
 
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
@@ -245,8 +260,8 @@ class ViewHistory(LoginRequiredMixin, ListView):
             tr.Int().check(user_id)
         except DataError:
             raise Http404("Invalid data")
-        if not (user_id and History.objects.filter(account_id=user_id).exists()):
-            raise Http404("Post does not exist")
+        if not user_id or user_id != self.request.user.id:
+            raise Http404("Page does not exist or you don`t have permission to view it")
         history = History.objects.filter(
             account_id=user_id).select_related("upvote_post", "upvote_photo", "follow").all()[:100]
         return history

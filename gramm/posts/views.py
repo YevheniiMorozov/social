@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, CreateView
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.views.generic.edit import FormMixin
 from posts.models import Post, PostTags, Comments, Upvote, Downvote, Tag
 from socialnet.models import Following, PostImages, Account, History
@@ -134,16 +134,13 @@ class ViewPost(LoginRequiredMixin, FormMixin, DetailView):
         context["upvote"] = Upvote.objects.filter(account__id=self.request.user.id, post__id=post_id).first()
         context["downvote"] = Downvote.objects.filter(account__id=self.request.user.id, post__id=post_id).first()
         context["tag"] = PostTags.objects.filter(post=self.get_object()).all()
-        post_tag = PostTags.objects.filter(post__author_id=self.request.user.id).select_related("tag").all()
-        tag_list = [element.tag for element in post_tag]
-        context["tag_list"] = tag_list
         return context
 
 
 class CreatePost(CreateView):
     form_class = PostForm
     form_class_2 = ImageForm
-    template_name = "create_post.html"
+    template_name = "create_post_with_vue.html"
 
     def post(self, request, *args, **kwargs):
         post_form = PostForm(request.POST, request.FILES)
@@ -171,9 +168,6 @@ class CreatePost(CreateView):
         context = super(CreatePost, self).get_context_data(**kwargs)
         context["post"] = self.form_class
         context["img"] = self.form_class_2
-        post_tag = PostTags.objects.filter(post__author_id=self.request.user.id).select_related("tag").all()
-        tag_list = [element.tag for element in post_tag]
-        context["tag_list"] = tag_list
         return context
 
     def form_valid(self, **kwargs):
@@ -208,3 +202,15 @@ def downvote(request, post_id):
             if Upvote.objects.filter(account_id=request.user.id, post_id=post_id).exists():
                 Upvote.objects.filter(account_id=request.user.id, post_id=post_id).delete()
         return redirect("view_post", post_id=post_id)
+
+
+def tag_format_json(request):
+    user_post = PostTags.objects.select_related("tag").all().order_by("-id")[:100]
+    tags = []
+    for element in user_post:
+        if element.tag.name in tags:
+            continue
+        else:
+            tags.append(element.tag.name)
+    uniq_tags = [{'name': el} for el in tags]
+    return JsonResponse(uniq_tags, safe=False, status=200)

@@ -1,0 +1,7 @@
+/venv/
+.idea/
+media/
+gramm/gramm/.env
+pytest_cache/
+gramm/.coverage
+__pycache__/

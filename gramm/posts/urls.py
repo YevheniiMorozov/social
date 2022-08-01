@@ -11,4 +11,5 @@ urlpatterns = [
     path("posts/view_post/<int:post_id>/upvote", upvote, name="upvote_post"),
     path("posts/view_post/<int:post_id>/downvote", downvote, name="downvote_post"),
     path("profile/add_post/", CreatePost.as_view(), name="create_post"),
+    path("user_tags/", tag_format_json, name="tags"),
 ]

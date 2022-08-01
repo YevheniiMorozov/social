@@ -23,7 +23,7 @@
             {% if messages %}
             <ul class="messages">
                 {% for message in messages %}
-                <li> {{message}} </li>
+                <li> {{message}}</li>
                 {% endfor %}
             </ul>
             {% endif %}
@@ -33,6 +33,11 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.37/vue.global.min.js"
+        integrity="sha512-rCO3ZZnxh9j/Y725Iq2Cqr2lc9fi83zVeN3PFTUosktylZsCFjD13PDbKrzKjKO/idjM4KlMQC52AsoGFTAe6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{% static 'main.js' %}"></script>
 <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 </body>
 </html>

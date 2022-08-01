@@ -7,14 +7,14 @@
     <h5>Add post</h5>
     <br>
     <br>
-    <input list="tag_list" , placeholder="chose tag" class="form-control" name="earlier_tag" style="width: 300px;">
-    <datalist id="tag_list">
-        {% for element in tag_list %}
-        <option>{{ element }}</option>
-        {% endfor %}
+    <div id='app'>
+        [[message]]
+    <input list="tags" class="form-control" name="earlier_tag" style="width: 300px;">
+    <datalist id="tags">
+        <option v-for='tag in tags'> [[tag.name]]</option>
     </datalist>
+    </div>
     <br>
-    {{ tag.as_p }}
     {{ post.as_p }}
     {{ img.as_p }}
     <button type="submit" class="btn btn-dark btn-block">Create post</button>
