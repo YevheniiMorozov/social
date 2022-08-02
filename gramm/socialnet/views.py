@@ -39,7 +39,7 @@ def register_user(request):
         form = AccountRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('change_info')
         else:
             messages.error(request, "This mail box is already register or password are too short")

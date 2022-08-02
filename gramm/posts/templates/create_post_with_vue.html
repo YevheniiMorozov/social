@@ -9,7 +9,7 @@
     <br>
     <div id='app'>
         [[message]]
-    <input list="tags" class="form-control" name="earlier_tag" style="width: 300px;">
+    <div @click="getListTags"><input list="tags" class="form-control" name="earlier_tag" style="width: 300px;"></div>
     <datalist id="tags">
         <option v-for='tag in tags'> [[tag.name]]</option>
     </datalist>

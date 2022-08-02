@@ -18,12 +18,11 @@
         {% csrf_token %}
         <h5>Add tag</h5>
         <div id='app'>
-            [[message]]
-            <input list="tags" class="form-control" name="earlier_tag" style="width: 300px;">
-            <datalist id="tags">
-                <option v-for='tag in tags'> [[tag.name]]</option>
-            </datalist>
-        </div>
+        [[message]]
+    <div @click="getListTags"><input list="tags" class="form-control" name="earlier_tag" style="width: 300px;"></div>
+    <datalist id="tags">
+        <option v-for='tag in tags'> [[tag.name]]</option>
+    </datalist>
         <br>
         <button type="submit" class="btn btn-dark btn-block" name="add_tag">Add tag</button>
     </form>

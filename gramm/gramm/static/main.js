@@ -6,11 +6,13 @@ const app = Vue.createApp({
       tags: [],
     };
   },
-  created() {
+  methods: {
+    getListTags(){
     fetch("/user_tags/")
       .then(response => response.json())
       .then(data => (this.tags = data));
     }
+  },
 });
 app.mount("#app");
 
