@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Exists, OuterRef
 from django.shortcuts import redirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.http import HttpResponseRedirect, Http404, JsonResponse
@@ -205,6 +206,11 @@ def downvote(request, post_id):
 
 
 def tag_format_json(request):
-    post_tag = PostTags.objects.filter(post__author_id=request.user.id).select_related("tag").all()
-    tag_list = [{'name': element.tag.name} for element in post_tag]
-    return JsonResponse(tag_list, safe=False, status=200)
+    tags = list(
+        Tag.objects.values('name')
+        .filter(Exists(PostTags.objects.filter(tag_id=OuterRef('id'), post__author_id=request.user.id)
+                       .order_by("tag__name")
+                       .distinct()
+                       )))
+
+    return JsonResponse(tags, safe=False, status=200)

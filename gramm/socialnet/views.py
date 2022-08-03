@@ -22,7 +22,7 @@ def login_user(request):
         form = UserLoginForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect("main")
     else:
         form = UserLoginForm()
