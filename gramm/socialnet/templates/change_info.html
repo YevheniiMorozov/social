@@ -4,23 +4,39 @@
 
 {% block content %}
 
-{% if github_login %}
-<p>Connected as <a href="https://github.com/{{ github_login.extra_data.login }}/" target="_blank">
-    {{github_login.extra_data.login}}</a></p>
+{% if facebook_login %}
+<p>Connected as <a href="https://facebook.com/{{ facebook_login.extra_data.id }}/" target="_blank">
+    {{ facebook_login.extra_data.id }}</a></p>
 {% if can_disconnect %}
-<form method="post" action="{% url 'social:disconnect' 'github' %}">
+<form method="post" action="{% url 'social:disconnect' 'facebook' %}">
     {% csrf_token %}
-    <button type="submit" class="btn btn-dark btn-block">Disconnect from GitHub</button>
+    <button type="submit" class="btn btn-primary btn-block">Disconnect from Facebook</button>
 </form>
 {% else %}
-<button type="button" disabled>Disconnect from GitHub</button>
+<button type="button" disabled>Disconnect from Facebook</button>
 <p style="color: red">You must <a href="{% url 'change_password' %}">define a password</a> for your account before
-    disconnecting from Github.</p>
+    disconnecting from Facebook.</p>
 {% endif %}
 {% else %}
-<a href="{% url 'social:begin' 'github' %}">Connect to GitHub</a>
+<a href="{% url 'social:begin' 'Facebook' %}">Connect to Facebook</a>
 {% endif %}
 
+{% if google_login %}
+<p>Connected as <a href="https://google.com/{{ google_login.extra_data.id }}/" target="_blank">
+    {{google_login.extra_data.id}}</a></p>
+{% if can_disconnect %}
+<form method="post" action="{% url 'social:disconnect' 'google' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger btn-block">Disconnect from GitHub</button>
+</form>
+{% else %}
+<button type="button" disabled>Disconnect from Gogle</button>
+<p style="color: red">You must <a href="{% url 'change_password' %}">define a password</a> for your account before
+    disconnecting from Goolge.</p>
+{% endif %}
+{% else %}
+<a href="{% url 'social:begin' 'google' %}">Connect to Google</a>
+{% endif %}
 
 <form action="{% url 'change_info' %}" method="post">
     {% csrf_token %}
