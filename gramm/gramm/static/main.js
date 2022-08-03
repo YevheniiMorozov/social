@@ -8,9 +8,10 @@ const app = Vue.createApp({
   },
   methods: {
     getListTags(){
-    fetch("/user_tags/")
+    setTimeout(()=> {fetch("/user_tags/")
       .then(response => response.json())
       .then(data => (this.tags = data));
+    }, 500)
     }
   },
 });

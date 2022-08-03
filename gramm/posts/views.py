@@ -205,12 +205,6 @@ def downvote(request, post_id):
 
 
 def tag_format_json(request):
-    user_post = PostTags.objects.select_related("tag").all().order_by("-id")[:100]
-    tags = []
-    for element in user_post:
-        if element.tag.name in tags:
-            continue
-        else:
-            tags.append(element.tag.name)
-    uniq_tags = [{'name': el} for el in tags]
-    return JsonResponse(uniq_tags, safe=False, status=200)
+    post_tag = PostTags.objects.filter(post__author_id=request.user.id).select_related("tag").all()
+    tag_list = [{'name': element.tag.name} for element in post_tag]
+    return JsonResponse(tag_list, safe=False, status=200)

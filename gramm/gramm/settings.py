@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["http://34.118.56.233"]
+CSRF_TRUSTED_ORIGINS = ["http://34.118.56.233", "https://socialgramm.pp.ua", "https://34.102.254.180"]
 
 # Application definition
 
