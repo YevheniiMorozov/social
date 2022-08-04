@@ -2,17 +2,19 @@ const app = Vue.createApp({
   delimiters: ["[[", "]]"],
   data() {
     return {
-      message: "Tag:",
+      checked: false,
       tags: [],
     };
   },
   methods: {
     getListTags(){
-    setTimeout(()=> {fetch("/user_tags/")
+    fetch("/user_tags/")
       .then(response => response.json())
       .then(data => (this.tags = data));
-    }, 500)
-    }
+    },
+    hidecont(){
+      this.checked = !this.checked;
+    },
   },
 });
 app.mount("#app");

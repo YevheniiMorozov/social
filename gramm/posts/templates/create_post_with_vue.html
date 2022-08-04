@@ -8,11 +8,15 @@
     <br>
     <br>
     <div id='app'>
-        [[message]]
-    <div @click.once="getListTags"><input list="tags" v-model.lazy="tags" class="form-control" name="earlier_tag" style="width: 300px;"></div>
-    <datalist id="tags">
-        <option v-for='tag in tags'> [[tag.name]]</option>
-    </datalist>
+        <div class="form-check form-switch">
+            <div @click.once="getListTags"><input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault"
+                                                  v-model="isCheck" @click="hidecont"></div>
+            <label class="form-check-label" for="flexSwitchCheckDefault">Add tag</label>
+        </div>
+        <input list="tags" class="form-control" name="earlier_tag" style="width: 300px;" v-if="checked">
+        <datalist id="tags" >
+            <option v-for='tag in tags'> [[tag.name]]</option>
+        </datalist>
     </div>
     <br>
     {{ post.as_p }}
