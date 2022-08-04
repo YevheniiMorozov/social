@@ -13,10 +13,10 @@
 <p><strong>-- OR --</strong></p>
 <form method="post">
     {% csrf_token %}
-    <button type="submit" class="btn btn-primary btn-block" formaction="{% url 'social:begin' 'google-oauth2' %}">
+    <button type="submit" class="btn btn-dark btn-block" formaction="{% url 'social:begin' 'github' %}">
+        Login with GitHub</button>
+    <button type="submit" class="btn btn-danger btn-block" formaction="{% url 'social:begin' 'google-oauth2' %}">
         Login with Google</button>
-    <button type="submit" class="btn btn-danger btn-block" formaction="{% url 'social:begin' 'facebook' %}">
-        Login with Facebook</button>
 </form>
 
 {% endblock %}
