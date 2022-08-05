@@ -209,8 +209,8 @@ def tag_format_json(request):
     tags = list(
         Tag.objects.values('name')
         .filter(Exists(PostTags.objects.filter(tag_id=OuterRef('id'), post__author_id=request.user.id)
-                       .order_by("tag__name")
-                       .distinct()
-                       )))
+                       ))
+        .order_by("tag__name")
+        .distinct())
 
     return JsonResponse(tags, safe=False, status=200)
