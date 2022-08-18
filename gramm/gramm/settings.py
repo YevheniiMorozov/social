@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'socialnet.apps.SocialnetConfig',
     'posts.apps.PostsConfig',
-    'social_django'
+    'social_django',
 ]
 
 MIDDLEWARE = [
