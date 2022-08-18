@@ -1,2 +1,1 @@
-# Task 12
-
+Educational project for learning Django
